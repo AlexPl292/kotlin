@@ -33,6 +33,7 @@ import org.jetbrains.kotlin.diagnostics.Diagnostic
 import org.jetbrains.kotlin.diagnostics.DiagnosticFactory
 import org.jetbrains.kotlin.diagnostics.DiagnosticUtils
 import org.jetbrains.kotlin.diagnostics.Errors.*
+import org.jetbrains.kotlin.fir.AbstractFirOldFrontendDiagnosticsTest
 import org.jetbrains.kotlin.frontend.java.di.createContainerForLazyResolveWithJava
 import org.jetbrains.kotlin.frontend.java.di.initJvmBuiltInsForTopDownAnalysis
 import org.jetbrains.kotlin.incremental.components.ExpectActualTracker
@@ -54,8 +55,10 @@ import org.jetbrains.kotlin.serialization.deserialization.MetadataPartProvider
 import org.jetbrains.kotlin.storage.ExceptionTracker
 import org.jetbrains.kotlin.storage.LockBasedStorageManager
 import org.jetbrains.kotlin.storage.StorageManager
+import org.jetbrains.kotlin.test.ConfigurationKind
 import org.jetbrains.kotlin.test.InTextDirectivesUtils
 import org.jetbrains.kotlin.test.KotlinTestUtils
+import org.jetbrains.kotlin.test.TestJdkKind
 import org.jetbrains.kotlin.test.util.DescriptorValidator
 import org.jetbrains.kotlin.test.util.RecursiveDescriptorComparator
 import org.jetbrains.kotlin.test.util.RecursiveDescriptorComparator.RECURSIVE
@@ -242,32 +245,34 @@ abstract class AbstractDiagnosticsTest : BaseDiagnosticsTest() {
         performAdditionalChecksAfterDiagnostics(
             testDataFile, files, groupedByModule, modules, moduleBindings, languageVersionSettingsByModule
         )
-        checkOriginalAndFirTestdataIdentity(testDataFile)
+        checkFirTestdata(testDataFile, files)
     }
 
-    private class DiagnosticsFullTextMessageCollector : MessageCollector {
-
-
-        override fun clear() {
-            TODO("Not yet implemented")
-        }
-
-        override fun report(severity: CompilerMessageSeverity, message: String, location: CompilerMessageLocation?) {
-            TODO("Not yet implemented")
-        }
-
-        override fun hasErrors(): Boolean {
-            TODO("Not yet implemented")
-        }
-    }
-
-    private fun checkOriginalAndFirTestdataIdentity(testDataFile: File) {
+    private fun checkFirTestdata(testDataFile: File, files: List<TestFile>) {
         val firTestDataFile = File(testDataFile.absolutePath.replace(".kt", ".fir.kt"))
-        if (!firTestDataFile.exists()) return
+        val firFailFile = File(testDataFile.absolutePath.replace(".kt", ".fir.fail"))
+        when {
+            firFailFile.exists() -> return
+            firTestDataFile.exists() -> checkOriginalAndFirTestdataIdentity(testDataFile, firTestDataFile)
+            else -> runFirTestAndGenerateTestData(testDataFile, firTestDataFile, files)
+        }
+    }
+
+    private fun checkOriginalAndFirTestdataIdentity(testDataFile: File, firTestDataFile: File) {
         val originalTestData = loadTestDataWithoutDiagnostics(testDataFile)
         val firTestData = loadTestDataWithoutDiagnostics(firTestDataFile)
         val message = "Original and fir test data doesn't identical. Please, add changes from ${testDataFile.name} to ${firTestDataFile.name}"
         TestCase.assertEquals(message, originalTestData, firTestData)
+    }
+
+    private fun runFirTestAndGenerateTestData(testDataFile: File, firTestDataFile: File, files: List<TestFile>) {
+        val testRunner = object : AbstractFirOldFrontendDiagnosticsTest() {
+            init {
+                environment = this@AbstractDiagnosticsTest.environment
+            }
+        }
+        FileUtil.copy(testDataFile, firTestDataFile)
+        testRunner.analyzeAndCheckUnhandled(firTestDataFile, files)
     }
 
     private fun StringBuilder.cleanupInferenceDiagnostics(): String = replace(Regex("NI;([\\S]*), OI;\\1([,!])")) { it.groupValues[1] + it.groupValues[2] }
