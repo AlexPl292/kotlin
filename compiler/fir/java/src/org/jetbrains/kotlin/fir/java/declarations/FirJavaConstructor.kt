@@ -48,6 +48,9 @@ class FirJavaConstructor @FirImplementationDetail constructor(
     override val delegatedConstructor: FirDelegatedConstructorCall?
         get() = null
 
+    override val isFromSealedClass: Boolean
+        get() = false
+
     override val body: FirBlock?
         get() = null
 

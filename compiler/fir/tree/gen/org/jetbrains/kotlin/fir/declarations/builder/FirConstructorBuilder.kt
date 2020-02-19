@@ -47,6 +47,7 @@ open class FirConstructorBuilder : FirAbstractConstructorBuilder, FirAnnotationC
     override lateinit var symbol: FirConstructorSymbol
     override var delegatedConstructor: FirDelegatedConstructorCall? = null
     override var body: FirBlock? = null
+    override var isFromSealedClass: Boolean = false
 
     override fun build(): FirConstructor {
         return FirConstructorImpl(
@@ -63,6 +64,7 @@ open class FirConstructorBuilder : FirAbstractConstructorBuilder, FirAnnotationC
             symbol,
             delegatedConstructor,
             body,
+            isFromSealedClass,
         )
     }
 

@@ -481,6 +481,7 @@ class RawFirBuilder(session: FirSession, val baseScopeProvider: FirScopeProvider
                 symbol = FirConstructorSymbol(callableIdForClassConstructor())
                 delegatedConstructor = firDelegatedCall
                 typeParameters += typeParametersFromSelfType(delegatedSelfTypeRef)
+                isFromSealedClass = owner.hasModifier(SEALED_KEYWORD)
                 this@toFirConstructor?.extractAnnotationsTo(this)
                 this@toFirConstructor?.extractValueParametersTo(this)
             }
@@ -849,6 +850,7 @@ class RawFirBuilder(session: FirSession, val baseScopeProvider: FirScopeProvider
                 extractAnnotationsTo(this)
                 typeParameters += typeParametersFromSelfType(delegatedSelfTypeRef)
                 extractValueParametersTo(this)
+                isFromSealedClass = owner.hasModifier(SEALED_KEYWORD)
                 body = buildFirBody()
                 this@RawFirBuilder.context.firFunctionTargets.removeLast()
             }.also {

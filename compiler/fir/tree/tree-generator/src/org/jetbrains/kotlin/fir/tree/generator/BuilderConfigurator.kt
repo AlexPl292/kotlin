@@ -68,6 +68,7 @@ object BuilderConfigurator : AbstractBuilderConfigurator<FirTreeBuilder>(FirTree
                 parents += abstractConstructorBuilder
                 defaultNull("delegatedConstructor")
                 defaultNull("body")
+                defaultFalse("isFromSealedClass")
             }
         }
 

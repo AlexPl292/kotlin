@@ -419,7 +419,7 @@ internal object CheckVisibility : CheckerStage() {
             }
             Visibilities.PRIVATE, Visibilities.PRIVATE_TO_THIS -> {
                 if (declaration.session == callInfo.session) {
-                    if (ownerId == null) {
+                    if (ownerId == null || declaration is FirConstructor && declaration.isFromSealedClass) {
                         // Top-level: visible in file
                         candidateFile == useSiteFile
                     } else {

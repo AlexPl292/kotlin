@@ -40,7 +40,7 @@ class ClassWrapper(
         return classKind == ClassKind.OBJECT
     }
 
-    private fun isSealed(): Boolean {
+    fun isSealed(): Boolean {
         return modifiers.hasModality(Modality.SEALED)
     }
 

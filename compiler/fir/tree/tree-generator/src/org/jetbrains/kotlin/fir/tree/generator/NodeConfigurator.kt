@@ -312,6 +312,7 @@ object NodeConfigurator : AbstractFieldConfigurator<FirTreeBuilder>(FirTreeBuild
             +field("delegatedConstructor", delegatedConstructorCall, nullable = true)
             +body(nullable = true)
             +booleanField("isPrimary")
+            +booleanField("isFromSealedClass")
         }
 
         delegatedConstructorCall.configure {

@@ -41,6 +41,7 @@ internal class FirConstructorImpl(
     override val symbol: FirConstructorSymbol,
     override var delegatedConstructor: FirDelegatedConstructorCall?,
     override var body: FirBlock?,
+    override val isFromSealedClass: Boolean,
 ) : FirConstructor() {
     override var controlFlowGraphReference: FirControlFlowGraphReference = FirEmptyControlFlowGraphReference
     override val isPrimary: Boolean get() = false

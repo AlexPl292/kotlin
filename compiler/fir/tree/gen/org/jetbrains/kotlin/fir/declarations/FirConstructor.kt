@@ -38,6 +38,7 @@ abstract class FirConstructor : FirPureAbstractElement(), FirFunction<FirConstru
     abstract val delegatedConstructor: FirDelegatedConstructorCall?
     abstract override val body: FirBlock?
     abstract val isPrimary: Boolean
+    abstract val isFromSealedClass: Boolean
 
     override fun <R, D> accept(visitor: FirVisitor<R, D>, data: D): R = visitor.visitConstructor(this, data)
 

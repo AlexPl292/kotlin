@@ -658,6 +658,7 @@ class DeclarationsConverter(
                 typeParameters += typeParametersFromSelfType(classWrapper.delegatedSelfTypeRef)
                 this.valueParameters += valueParameters.map { it.firValueParameter }
                 delegatedConstructor = firDelegatedCall
+                isFromSealedClass = classWrapper.isSealed()
             }, valueParameters
         )
     }
@@ -723,6 +724,7 @@ class DeclarationsConverter(
             this.status = status
             symbol = FirConstructorSymbol(callableIdForClassConstructor())
             delegatedConstructor = constructorDelegationCall
+            isFromSealedClass = classWrapper.isSealed()
 
             context.firFunctionTargets += target
             annotations += modifiers.annotations

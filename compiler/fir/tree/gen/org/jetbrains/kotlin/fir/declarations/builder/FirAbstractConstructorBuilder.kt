@@ -44,5 +44,6 @@ interface FirAbstractConstructorBuilder : FirFunctionBuilder {
     abstract var containerSource: DeserializedContainerSource?
     abstract var symbol: FirConstructorSymbol
     abstract var delegatedConstructor: FirDelegatedConstructorCall?
+    abstract var isFromSealedClass: Boolean
     override fun build(): FirConstructor
 }
