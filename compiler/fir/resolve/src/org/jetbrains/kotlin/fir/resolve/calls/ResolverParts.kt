@@ -230,7 +230,11 @@ internal object CheckCallableReferenceExpectedType : CheckerStage() {
         val returnTypeRef = candidate.bodyResolveComponents.returnTypeCalculator.tryCalculateReturnType(fir)
 
         val resultingType: ConeKotlinType = when (fir) {
-            is FirFunction -> createKFunctionType(fir, resultingReceiverType, returnTypeRef)
+            is FirFunction -> createKFunctionType(
+                fir, resultingReceiverType, returnTypeRef,
+                expectedParameterNumberWithReceiver = expectedType?.let { it.typeArguments.size - 1 }
+                    ?: if (resultingReceiverType != null) fir.valueParameters.size + 1 else fir.valueParameters.size
+            )
             is FirVariable<*> -> createKPropertyType(fir, resultingReceiverType, returnTypeRef)
             else -> ConeKotlinErrorType("Unknown callable kind: ${fir::class}")
         }.let(candidate.substitutor::substituteOrSelf)
@@ -284,10 +288,17 @@ private fun createKPropertyType(
 private fun createKFunctionType(
     function: FirFunction<*>,
     receiverType: ConeKotlinType?,
-    returnTypeRef: FirResolvedTypeRef
+    returnTypeRef: FirResolvedTypeRef,
+    expectedParameterNumberWithReceiver: Int
 ): ConeKotlinType {
-    val parameterTypes = function.valueParameters.map {
-        it.returnTypeRef.coneTypeSafe<ConeKotlinType>() ?: ConeKotlinErrorType("No type for parameter $it")
+    val parameterTypes = mutableListOf<ConeKotlinType>()
+    val expectedParameterNumber =
+        if (receiverType != null) expectedParameterNumberWithReceiver - 1 else expectedParameterNumberWithReceiver
+    for ((index, valueParameter) in function.valueParameters.withIndex()) {
+        if (index < expectedParameterNumber || valueParameter.defaultValue == null) {
+            parameterTypes += valueParameter.returnTypeRef.coneTypeSafe()
+                ?: ConeKotlinErrorType("No type for parameter $valueParameter")
+        }
     }
 
     return createFunctionalType(
